@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "off": "sls offline start --reloadHandler"
+  },
+  "dependencies": {
+    "chrome-aws-lambda": "^10.1.0",
+    "puppeteer-core": "^10.1.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^19.6.3",
+    "serverless-offline": "^12.0.4"
+  }
+}

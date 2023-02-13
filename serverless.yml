@@ -1,0 +1,70 @@
+service: wizzard-v1
+useDotenv: true
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-2
+  timeout: 30
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "sqs:SendMessage"
+      Resource:
+        Fn::GetAtt: [storesearch, Arn]
+
+plugins:
+  - serverless-offline
+
+package:
+  patterns:
+    - src/**
+    - '!node_modules/**'
+    - '!dev/**'
+
+layers:
+  corepuppeteer:
+    path: one
+    description: "core puppeteer dependencies"  
+  chrome:
+    path: two
+    description: "chrome dependencies"  
+  sdkaws:
+    path: three
+    description: "sdk aws dependencies"  
+  
+functions:
+  scraper:
+    handler: src/handlers/store.find
+    events:
+      - httpApi:
+          path: /scraper
+          method: get
+      - sqs:
+          arn: arn:aws:sqs:${env:REGION}:${env:ACCOUNT_ID}:storesearch
+          batchSize: 1   
+    layers:
+      - !Ref CorepuppeteerLambdaLayer
+      - !Ref ChromeLambdaLayer
+      - !Ref SdkawsLambdaLayer
+  
+  sendSearch:
+    handler: src/handlers/store.sendSearch
+    events:
+      - httpApi:
+          path: /sendsearch
+          method: post
+    layers:
+      - !Ref CorepuppeteerLambdaLayer
+      - !Ref ChromeLambdaLayer
+      - !Ref SdkawsLambdaLayer
+
+
+resources:
+  Resources:
+    store:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "storesearch"
+      
