@@ -63,7 +63,7 @@ functions:
 
 resources:
   Resources:
-    store:
+    storesearch:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: "storesearch"
